@@ -15,6 +15,9 @@ class TreeView extends StatefulWidget {
   final bool showActions;
   final bool showCheckBox;
   final bool contentTappable;
+  final Color? textNormalColor;
+  final Color? textSelectedColor;
+  final double? textFontSize;
 
   /// Desired behavior:
   /// - if I check/uncheck a parent I want all children to be checked/unchecked
@@ -54,6 +57,9 @@ class TreeView extends StatefulWidget {
     this.contentTappable = false,
     this.icon = const Icon(Icons.expand_more, size: 16.0),
     this.manageParentState = false,
+    this.textNormalColor,
+    this.textFontSize,
+    this.textSelectedColor,
   }) : super(key: key);
 
   @override
@@ -63,6 +69,9 @@ class TreeView extends StatefulWidget {
 class _TreeViewState extends State<TreeView> {
   late TreeNodeData _root;
   List<TreeNodeData> _renderList = [];
+
+  /// 当前选中项
+  TreeNodeData? currentSelectedData;
 
   List<TreeNodeData> _filter(String val, List<TreeNodeData> list) {
     List<TreeNodeData> tempNodes = [];
@@ -74,7 +83,8 @@ class _TreeViewState extends State<TreeView> {
         tempNode.children = _filter(val, tempNode.children);
       }
 
-      if (tempNode.title.contains(RegExp(val, caseSensitive: false)) || tempNode.children.isNotEmpty) {
+      if (tempNode.title.contains(RegExp(val, caseSensitive: false)) ||
+          tempNode.children.isNotEmpty) {
         tempNodes.add(tempNode);
       }
     }
@@ -83,7 +93,7 @@ class _TreeViewState extends State<TreeView> {
   }
 
   void _onChange(String val) {
-     _renderList = widget.data;
+    _renderList = widget.data;
 
     if (val.isNotEmpty) {
       _renderList = _filter(val, _renderList);
@@ -128,6 +138,7 @@ class _TreeViewState extends State<TreeView> {
   void initState() {
     super.initState();
     _renderList = widget.data;
+
     _root = TreeNodeData(
       title: '',
       extra: null,
@@ -135,6 +146,14 @@ class _TreeViewState extends State<TreeView> {
       expanded: false,
       children: _renderList,
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant TreeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      _renderList = widget.data;
+    });
   }
 
   @override
@@ -150,11 +169,10 @@ class _TreeViewState extends State<TreeView> {
                 bottom: 12.0,
               ),
               child: TextField(
-                onChanged: _onChange,
-                 decoration: InputDecoration(
-                  labelText: widget.filterPlaceholder,
-                )
-              ),
+                  onChanged: _onChange,
+                  decoration: InputDecoration(
+                    labelText: widget.filterPlaceholder,
+                  )),
             ),
           ...List.generate(
             _renderList.length,
@@ -173,9 +191,19 @@ class _TreeViewState extends State<TreeView> {
                 showCheckBox: widget.showCheckBox,
                 showActions: widget.showActions,
                 contentTappable: widget.contentTappable,
+                textSelectedColor: widget.textSelectedColor,
+                textFontSize: widget.textFontSize,
+                textNormalColor: widget.textNormalColor,
+                isChecked: currentSelectedData?.id == _renderList[index].id,
+                currentSelectedData: currentSelectedData,
                 onTap: widget.onTap ?? (n) {},
                 onLoad: widget.onLoad ?? (n) {},
-                onCheck: widget.onCheck ?? (b, n) {},
+                onCheck: (checked, node) {
+                  setState(() {
+                    currentSelectedData = node;
+                  });
+                  widget.onCheck?.call(checked, node);
+                },
                 onExpand: widget.onExpand ?? (n) {},
                 onRemove: widget.onRemove ?? (n, p) {},
                 onAppend: widget.onAppend ?? (n, p) {},

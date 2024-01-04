@@ -14,6 +14,15 @@ class TreeNode extends StatefulWidget {
   final bool contentTappable;
   final double offsetLeft;
   final int? maxLines;
+  final Color? textNormalColor;
+  final Color? textSelectedColor;
+  final double? textFontSize;
+
+  /// 当前选中项
+  final TreeNodeData? currentSelectedData;
+
+  /// 是否选中
+  final bool isChecked;
 
   final Function(TreeNodeData node) onTap;
   final void Function(bool checked, TreeNodeData node) onCheck;
@@ -30,40 +39,47 @@ class TreeNode extends StatefulWidget {
   final void Function(TreeNodeData node) append;
   final void Function(TreeNodeData node, TreeNodeData parent) onAppend;
 
-  const TreeNode({
-    Key? key,
-    required this.data,
-    required this.parent,
-    this.parentState,
-    required this.offsetLeft,
-    this.maxLines,
-    required this.showCheckBox,
-    required this.showActions,
-    required this.contentTappable,
-    required this.icon,
-    required this.lazy,
-    required this.load,
-    required this.append,
-    required this.remove,
-    required this.onTap,
-    required this.onCheck,
-    required this.onLoad,
-    required this.onExpand,
-    required this.onAppend,
-    required this.onRemove,
-    required this.onCollapse,
-  }) : super(key: key);
+  const TreeNode(
+      {Key? key,
+      this.currentSelectedData,
+      required this.data,
+      required this.parent,
+      this.parentState,
+      required this.offsetLeft,
+      this.maxLines,
+      required this.showCheckBox,
+      required this.showActions,
+      required this.contentTappable,
+      required this.icon,
+      required this.lazy,
+      required this.load,
+      required this.append,
+      required this.remove,
+      required this.onTap,
+      required this.onCheck,
+      required this.onLoad,
+      required this.onExpand,
+      required this.onAppend,
+      required this.onRemove,
+      required this.onCollapse,
+      this.textNormalColor,
+      this.textFontSize,
+      this.isChecked = false,
+      this.textSelectedColor = Colors.red})
+      : super(key: key);
 
   @override
   _TreeNodeState createState() => _TreeNodeState();
 }
 
-class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin {
+class _TreeNodeState extends State<TreeNode>
+    with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
   bool _isChecked = false;
+
   bool _showLoading = false;
   late AnimationController _rotationController;
-  final Tween<double> _turnsTween = Tween<double>(begin: -0.25, end: 0.0);
+  final Tween<double> _turnsTween = Tween<double>(begin: -0, end: 0.25);
 
   List<TreeNode> _geneTreeNodes(List list) {
     return List.generate(list.length, (int index) {
@@ -81,6 +97,11 @@ class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin
         showCheckBox: widget.showCheckBox,
         showActions: widget.showActions,
         contentTappable: widget.contentTappable,
+        textSelectedColor: widget.textSelectedColor,
+        textFontSize: widget.textFontSize,
+        textNormalColor: widget.textNormalColor,
+        isChecked:
+            widget.currentSelectedData?.id == (list[index] as TreeNodeData).id,
         onTap: widget.onTap,
         onCheck: widget.onCheck,
         onExpand: widget.onExpand,
@@ -116,7 +137,8 @@ class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     if (widget.parentState != null) _isChecked = widget.data.checked;
 
-    bool hasData = widget.data.children.isNotEmpty || (widget.lazy && !_isExpanded);
+    bool hasData =
+        widget.data.children.isNotEmpty || (widget.lazy && !_isExpanded);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,17 +146,16 @@ class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin
         InkWell(
           splashColor: widget.contentTappable ? null : Colors.transparent,
           highlightColor: widget.contentTappable ? null : Colors.transparent,
-          mouseCursor: widget.contentTappable ? SystemMouseCursors.click : MouseCursor.defer,
-          onTap: widget.contentTappable ? () {
-            if (hasData) {
-              widget.onTap(widget.data);
-              toggleExpansion();
-            } else {
-              _isChecked = !_isChecked;
-              widget.onCheck(_isChecked, widget.data);
-              setState(() {});
-            }
-          } : (){},
+          mouseCursor: widget.contentTappable
+              ? SystemMouseCursors.click
+              : MouseCursor.defer,
+          onTap: widget.contentTappable
+              ? () {
+                  _isChecked = !_isChecked;
+                  widget.onCheck(_isChecked, widget.data);
+                  setState(() {});
+                }
+              : () {},
           child: Container(
             margin: const EdgeInsets.only(bottom: 2.0),
             padding: const EdgeInsets.only(right: 12.0),
@@ -145,10 +166,12 @@ class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin
                   child: IconButton(
                     iconSize: 16,
                     icon: hasData ? widget.icon : Container(),
-                    onPressed: hasData ? () {
-                      widget.onTap(widget.data);
-                      toggleExpansion();
-                    } : null,
+                    onPressed: hasData
+                        ? () {
+                            widget.onTap(widget.data);
+                            toggleExpansion();
+                          }
+                        : null,
                   ),
                   turns: _turnsTween.animate(_rotationController),
                 ),
@@ -175,11 +198,16 @@ class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin
                     key: ValueKey(widget.data.backgroundColor?.call()),
                     color: widget.data.backgroundColor?.call(),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 0.0),
                       child: Text(
                         widget.data.title,
                         maxLines: widget.maxLines ?? 1,
                         overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: widget.textFontSize,
+                            color: widget.isChecked
+                                ? widget.textSelectedColor
+                                : widget.textNormalColor),
                       ),
                     ),
                   ),
@@ -198,7 +226,8 @@ class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin
                       widget.remove(widget.data);
                       widget.onRemove(widget.data, widget.parent);
                     },
-                    child: const Text('Remove', style: TextStyle(fontSize: 12.0)),
+                    child:
+                        const Text('Remove', style: TextStyle(fontSize: 12.0)),
                   ),
                 if (widget.data.customActions?.isNotEmpty == true)
                   ...widget.data.customActions!,
@@ -245,7 +274,9 @@ class _TreeNodeState extends State<TreeNode> with SingleTickerProviderStateMixin
   void _checkUncheckParent() {
     // Check/uncheck all children based on parent state
     widget.data.checked = _isChecked;
-    widget.data.children.forEach((child) => child.checked = _isChecked);
+    for (var child in widget.data.children) {
+      child.checked = _isChecked;
+    }
     widget.parentState!.setState(() {});
 
     // Check/uncheck parent based on children state

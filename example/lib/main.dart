@@ -38,11 +38,11 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(title: const Text('Flutter Tree Example')),
         body: TreeView(
           data: treeData,
-          lazy: true,
+          lazy: false,
           load: _load,
-          showActions: true,
-          showCheckBox: true,
-          showFilter: true,
+          showActions: false,
+          showCheckBox: false,
+          showFilter: false,
           contentTappable: true,
           filterPlaceholder: "Custom placeholder",
           append: (parent) {

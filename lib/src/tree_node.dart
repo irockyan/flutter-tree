@@ -98,6 +98,7 @@ class _TreeNodeState extends State<TreeNode>
         showActions: widget.showActions,
         contentTappable: widget.contentTappable,
         textSelectedColor: widget.textSelectedColor,
+        currentSelectedData: widget.currentSelectedData,
         textFontSize: widget.textFontSize,
         textNormalColor: widget.textNormalColor,
         isChecked:
@@ -163,15 +164,21 @@ class _TreeNodeState extends State<TreeNode>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 RotationTransition(
-                  child: IconButton(
-                    iconSize: 16,
-                    icon: hasData ? widget.icon : Container(),
-                    onPressed: hasData
-                        ? () {
-                            widget.onTap(widget.data);
-                            toggleExpansion();
-                          }
-                        : null,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    height: 32,
+                    width: 32,
+                    child: GestureDetector(
+                      onTap: hasData
+                          ? () {
+                              widget.onTap(widget.data);
+                              toggleExpansion();
+                            }
+                          : null,
+                      child: Container(
+                        child: hasData ? widget.icon : Container(),
+                      ),
+                    ),
                   ),
                   turns: _turnsTween.animate(_rotationController),
                 ),

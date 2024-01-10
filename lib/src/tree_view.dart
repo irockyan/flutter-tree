@@ -18,6 +18,7 @@ class TreeView extends StatefulWidget {
   final Color? textNormalColor;
   final Color? textSelectedColor;
   final double? textFontSize;
+  final bool? isChecked;
 
   /// Desired behavior:
   /// - if I check/uncheck a parent I want all children to be checked/unchecked
@@ -35,32 +36,33 @@ class TreeView extends StatefulWidget {
   final TreeNodeData Function(TreeNodeData parent)? append;
   final Future<List<TreeNodeData>> Function(TreeNodeData parent)? load;
 
-  const TreeView({
-    Key? key,
-    required this.data,
-    this.onTap,
-    this.onCheck,
-    this.onLoad,
-    this.onExpand,
-    this.onCollapse,
-    this.onAppend,
-    this.onRemove,
-    this.append,
-    this.load,
-    this.lazy = false,
-    this.offsetLeft = 24.0,
-    this.maxLines,
-    this.showFilter = false,
-    this.filterPlaceholder = 'Search',
-    this.showActions = false,
-    this.showCheckBox = false,
-    this.contentTappable = false,
-    this.icon = const Icon(Icons.expand_more, size: 16.0),
-    this.manageParentState = false,
-    this.textNormalColor,
-    this.textFontSize,
-    this.textSelectedColor,
-  }) : super(key: key);
+  const TreeView(
+      {Key? key,
+      required this.data,
+      this.onTap,
+      this.onCheck,
+      this.onLoad,
+      this.onExpand,
+      this.onCollapse,
+      this.onAppend,
+      this.onRemove,
+      this.append,
+      this.load,
+      this.lazy = false,
+      this.offsetLeft = 24.0,
+      this.maxLines,
+      this.showFilter = false,
+      this.filterPlaceholder = 'Search',
+      this.showActions = false,
+      this.showCheckBox = false,
+      this.contentTappable = false,
+      this.icon = const Icon(Icons.expand_more, size: 16.0),
+      this.manageParentState = false,
+      this.textNormalColor,
+      this.textFontSize,
+      this.textSelectedColor,
+      this.isChecked})
+      : super(key: key);
 
   @override
   State<TreeView> createState() => _TreeViewState();
@@ -153,6 +155,7 @@ class _TreeViewState extends State<TreeView> {
     super.didUpdateWidget(oldWidget);
     setState(() {
       _renderList = widget.data;
+      currentSelectedData = null;
     });
   }
 

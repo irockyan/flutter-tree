@@ -158,30 +158,35 @@ class _TreeNodeState extends State<TreeNode>
                 }
               : () {},
           child: Container(
-            margin: const EdgeInsets.only(bottom: 2.0),
+            margin: const EdgeInsets.only(bottom: 8.0),
             padding: const EdgeInsets.only(right: 12.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                RotationTransition(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    height: 32,
-                    width: 32,
-                    child: GestureDetector(
-                      onTap: hasData
-                          ? () {
-                              widget.onTap(widget.data);
-                              toggleExpansion();
-                            }
-                          : null,
-                      child: Container(
-                        child: hasData ? widget.icon : Container(),
+                hasData || widget.parent.id != null
+                    ? RotationTransition(
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          height: 32,
+                          width: 32,
+                          child: GestureDetector(
+                            onTap: hasData
+                                ? () {
+                                    widget.onTap(widget.data);
+                                    toggleExpansion();
+                                  }
+                                : null,
+                            child: Container(
+                              child: hasData ? widget.icon : Container(),
+                            ),
+                          ),
+                        ),
+                        turns: _turnsTween.animate(_rotationController),
+                      )
+                    : const SizedBox(
+                        width: 8,
+                        height: 8,
                       ),
-                    ),
-                  ),
-                  turns: _turnsTween.animate(_rotationController),
-                ),
                 if (widget.showCheckBox)
                   Checkbox(
                     value: _isChecked,

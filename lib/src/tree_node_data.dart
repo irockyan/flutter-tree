@@ -11,6 +11,7 @@ class TreeNodeData {
   final MaterialStateProperty<Color>? checkBoxFillColor;
   final ValueGetter<Color>? backgroundColor;
   final List<Widget>? customActions;
+  final bool? isAll;
   List<TreeNodeData> children;
 
   TreeNodeData({
@@ -20,6 +21,7 @@ class TreeNodeData {
     required this.checked,
     required this.children,
     this.extra,
+    this.isAll,
     this.checkBoxCheckColor,
     this.checkBoxFillColor,
     this.backgroundColor,
